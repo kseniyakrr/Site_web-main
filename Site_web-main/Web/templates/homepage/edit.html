@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 30px;">{{ title }}</h1>
+    
+    <form method="post" enctype="multipart/form-data" style="display: grid; grid-template-columns: 150px 1fr; gap: 15px; align-items: center;">
+        {% csrf_token %}
+        
+        <!-- Вывод ошибок формы -->
+        {% if form.non_field_errors %}
+        <div class="form-errors" style="grid-column: span 2; color: #dc3545; margin-bottom: 15px;">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+        
+        <!-- Вывод полей формы -->
+        {% for field in form %}
+        <label for="{{ field.id_for_label }}" style="text-align: right; padding-right: 15px;">
+            {{ field.label }}:
+        </label>
+        <div style="display: flex; flex-direction: column;">
+            {{ field }}
+            {% if field.help_text %}
+            <small style="color: #6c757d; font-size: 0.8em; margin-top: 5px;">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+            <div class="field-errors" style="color: #dc3545; font-size: 0.8em; margin-top: 5px;">
+                {{ field.errors }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <!-- Кнопка отправки -->
+        <div style="grid-column: 2; margin-top: 20px;">
+            <button type="submit" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Сохранить изменения
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Стили для полей ввода */
+    input[type="text"], 
+    input[type="email"], 
+    input[type="password"],
+    input[type="file"],
+    textarea, select {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Стиль при фокусе */
+    input:focus, textarea:focus, select:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    
+    /* Адаптивность для мобильных */
+    @media (max-width: 576px) {
+        form {
+            grid-template-columns: 1fr;
+        }
+        label {
+            text-align: left !important;
+            padding-right: 0 !important;
+            margin-top: 15px;
+        }
+    }
+</style>
+{% endblock %}

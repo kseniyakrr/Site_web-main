@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}  <!-- Не забудьте загрузить static! -->
+
+{% block title %}Меню | Наша пиццерия{% endblock %}
+
+
+{% block content %}
+
+    <section class="menu">
+        
+        <h2 class="section-title">Наше меню</h2>
+
+      
+
+        <p>{{ description }}</p>
+        <div class="pizza-list">
+            {% for pizza in pizzas %}
+                <div class="pizza-item">
+                    <h3>{{ pizza.name }}</h3>
+                    <p>{{ pizza.description|truncatewords:20 }}</p>
+                    <a href="{% url 'pizza_detail' pizza.id %}">Подробнее</a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
+

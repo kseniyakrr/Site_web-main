@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .recipe-list-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .recipes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+    
+    .recipe-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .recipe-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .recipe-image {
+        height: 200px;
+        overflow: hidden;
+    }
+    
+    .recipe-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .recipe-card:hover .recipe-image img {
+        transform: scale(1.05);
+    }
+    
+    .recipe-content {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .recipe-content h3 {
+        margin: 0 0 10px;
+        color: #2c3e50;
+        font-size: 1.4rem;
+    }
+    
+    .recipe-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+    
+    .ingredients-preview {
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+    
+    .ingredients-preview h4 {
+        margin: 0 0 8px;
+        color: #e74c3c;
+        font-size: 1.1rem;
+    }
+    
+    .ingredients-preview p {
+        color: #34495e;
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .view-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #e74c3c;
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.3s ease;
+        margin-top: auto;
+    }
+    
+    .view-button:hover {
+        background: #c0392b;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+        gap: 5px;
+    }
+    
+    .pagination a {
+        padding: 8px 16px;
+        text-decoration: none;
+        border: 1px solid #ddd;
+        color: #e74c3c;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+    
+    .pagination a.active {
+        background: #e74c3c;
+        color: white;
+        border: 1px solid #e74c3c;
+    }
+    
+    .pagination a:hover:not(.active) {
+        background: #f5f5f5;
+    }
+    
+    .no-recipes {
+        text-align: center;
+        grid-column: 1 / -1;
+        padding: 40px;
+        background: #f9f9f9;
+        border-radius: 10px;
+    }
+    
+    .no-recipes p {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+        color: #7f8c8d;
+    }
+    
+    .btn-primary {
+        background: #e74c3c;
+        border: none;
+        padding: 10px 25px;
+        font-size: 1rem;
+    }
+    
+    .btn-primary:hover {
+        background: #c0392b;
+    }
+    
+    h1 {
+        color: #2c3e50;
+        font-weight: 700;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    
+    h1:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: #e74c3c;
+        border-radius: 2px;
+    }
+</style>
+
+<div class="recipe-list-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Рецепты пиццы</h1>
+        <a href="{% url 'recipe' %}" class="btn btn-primary">Добавить рецепт</a>
+    </div>
+    
+    <div class="recipes-grid">
+        {% for recipe in page_obj %}
+        <div class="recipe-card">
+            {% if recipe.image %}
+            <div class="recipe-image">
+                <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}">
+            </div>
+            {% endif %}
+            
+            <div class="recipe-content">
+                <h3>{{ recipe.title }}</h3>
+                
+                <div class="recipe-meta">
+                    {% if recipe.author_name %}
+                    <span>Автор: {{ recipe.author_name }}</span>
+                    {% endif %}
+                    <span class="date">{{ recipe.created_at|date:"d.m.Y" }}</span>
+                </div>
+                
+                <div class="ingredients-preview">
+                    <h4>Ингредиенты:</h4>
+                    <p>{{ recipe.ingredients|truncatewords:15 }}</p>
+                </div>
+                
+                <a href="{% url 'recipe_detail' recipe.id %}" class="view-button">Посмотреть рецепт</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-recipes">
+            <p>Пока нет добавленных рецептов пиццы. Будьте первым!</p>
+            <a href="{% url 'recipe' %}" class="btn btn-primary">Добавить рецепт</a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+        {% endif %}
+        
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <a href="?page={{ i }}" class="active">{{ i }}</a>
+        {% else %}
+        <a href="?page={{ i }}">{{ i }}</a>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

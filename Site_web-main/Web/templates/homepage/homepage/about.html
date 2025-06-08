@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Загрузка файлов</h1>
+
+<!-- Форма загрузки -->
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Загрузить</button>
+</form>
+
+<!-- Сообщения об ошибках/успехе -->
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Список загруженных файлов -->
+<h2>Загруженные файлы</h2>
+<ul>
+    {% for file in files %}
+    <li>
+        <a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a>
+        <small>({{ file.uploaded_at }})</small>
+    </li>
+    {% empty %}
+    <li>Нет загруженных файлов</li>
+    {% endfor %}
+</ul>
+{% endblock %}

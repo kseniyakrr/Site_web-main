@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="registration-container" style="max-width: 500px; margin: 0 auto;">
+    <h1 style="text-align: center; margin-bottom: 25px;">Регистрация</h1>
+    <form method="post" style="display: grid; grid-template-columns: 120px 1fr; gap: 15px; align-items: center;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}"/>
+        
+        <div class="form-error" style="grid-column: span 2; margin-bottom: 10px;">
+            {{ form.non_field_errors }}
+        </div>
+        
+        {% for f in form %}
+        <label class="form-label" for="{{ f.id_for_label }}" 
+               style="text-align: right; padding-right: 15px; font-weight: 500;">
+            {{ f.label }}:
+        </label>
+        <div style="display: flex; flex-direction: column;">
+            {{ f }}
+            <div class="form-error" style="color: #dc3545; font-size: 0.85em; margin-top: 5px;">
+                {{ f.errors }}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div style="grid-column: 2; margin-top: 20px;">
+            <button type="submit" 
+                    style="padding: 10px 25px; 
+                           background-color: #28a745; 
+                           color: white; 
+                           border: none; 
+                           border-radius: 4px; 
+                           cursor: pointer;
+                           font-size: 1em;">
+                Зарегистрироваться
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

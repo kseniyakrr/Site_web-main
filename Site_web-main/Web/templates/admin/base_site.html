@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Админка {{ site_title|default:_('Пиццерия') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}" style="font-family: 'Arial Black', sans-serif; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); color:#FF8C00">🍕 НАША ПИЦЦЕРИЯ!</a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+<style>
+    /* Оранжевая тема для админки */
+    #header {
+        background: #ffffff; /* Ярко-оранжевый */
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    #branding h1 {
+        margin: 0;
+        padding: 10px 0;
+    }
+    
+    #branding h1 a {
+        font-size: 22px;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+    }
+    
+    #branding h1 a:hover {
+        text-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+        transform: scale(1.02);
+    }
+    
+    .module caption {
+        background: #FFA500; /* Светло-оранжевый */
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    a:link, a:visited {
+        color: #FF8C00;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
