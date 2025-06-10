@@ -138,11 +138,17 @@ class UploadFiles(models.Model):
     def __str__(self):
         return f"Файл {self.file.name} от {self.uploaded_at}"
 
+
 class Recipe(models.Model):
     title = models.CharField("Название", max_length=200)
     ingredients = models.TextField("Ингредиенты")
     instructions = models.TextField("Инструкция")
-    author_name = models.CharField("Автор", max_length=100, blank=True)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='recipes',
+        verbose_name='Автор'
+    )
     image = models.ImageField("Фото", upload_to='recipes/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

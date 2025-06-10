@@ -89,7 +89,7 @@ class PizzaForm(forms.ModelForm):
     class Meta:
         model = Pizza
         fields = ['name', 'slug', 'description', 'price', 'diameter', 
-                  'is_available', 'image', 'category', 'tags', 'history_text']
+                  'is_available', 'image', 'category', 'history_text']
         
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-input', 'minlength': '3',
@@ -110,7 +110,6 @@ class PizzaForm(forms.ModelForm):
             'is_available': 'Статус доступности',
             'image': 'Фото',
             'category': 'Категория',
-            'tags': 'Тэги',
             'history_text': 'История создания', 
         }
 
@@ -121,11 +120,17 @@ class UploadFileForm(forms.Form):
 class RecipeForm(forms.ModelForm):
     class Meta:
         model = Recipe
-        fields = ['title', 'ingredients', 'instructions', 'author_name', 'image']
+        fields = ['title', 'ingredients', 'instructions', 'image']
         widgets = {
             'ingredients': forms.Textarea(attrs={'rows': 3}),
             'instructions': forms.Textarea(attrs={'rows': 5}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if 'author_name' in self.fields:
+            del self.fields['author_name']
 
 
 class CommentForm(forms.ModelForm):

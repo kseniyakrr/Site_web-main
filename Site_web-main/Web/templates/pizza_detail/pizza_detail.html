@@ -2,69 +2,72 @@
 
 {% block content %}
 
-<div class="pizza-detail">
-    <h1>{{ pizza.name }}</h1>
-    
-    {% if pizza.image %}
-    <div class="pizza-image" style="width: 300px; height: 300px; overflow: hidden; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <img src="{{ pizza.image.url }}" alt="{{ pizza.name }}" 
-             style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
-    </div>
-    {% endif %}
-    
-    <div class="pizza-info">
-        <p><strong>Описание:</strong> {{ pizza.description }}</p>
-        <p><strong>Цена:</strong> {{ pizza.price }} руб.</p>
-        <p><strong>Диаметр:</strong> {{ pizza.diameter }} см</p>
-        <p><strong>Доступность:</strong> {% if pizza.is_available %}В наличии{% else %}Нет в наличии{% endif %}</p>
-        <p><strong>История создания:</strong> {{ pizza.history_text }}</p>
-        <!-- Блок с тегами пиццы -->
-        {% with pizza.tags.all as pizza_tags %}
-        {% if pizza_tags %}
-        <div class="pizza-tags">
-            <p><strong>Теги:</strong></p>
-            <ul class="tags-list">
-                {% for tag in pizza_tags %}
-                <li>
-                    <a href="{% url 'tag' tag.slug %}" class="tag">
-                        {{ tag.tag }}
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
+<div class="pizza-detail-container">
+    <div class="pizza-main">
+        {% if pizza.image %}
+        <div class="pizza-image-container">
+            <img src="{{ pizza.image.url }}" alt="{{ pizza.name }}" class="pizza-image">
         </div>
         {% endif %}
-        {% endwith %}
+        
+        <div class="pizza-info">
+            <h1>{{ pizza.name }}</h1>
+            
+            <div class="pizza-meta">
+                <p class="price">{{ pizza.price }} руб.</p>
+                <p class="diameter">Диаметр: {{ pizza.diameter }} см</p>
+                <p class="availability {% if not pizza.is_available %}out-of-stock{% endif %}">
+                    {% if pizza.is_available %}В наличии{% else %}Нет в наличии{% endif %}
+                </p>
+            </div>
+            
+            <p class="description">{{ pizza.description }}</p>
+            
+            <div class="pizza-history">
+                <h3>История создания</h3>
+                <p>{{ pizza.history_text }}</p>
+            </div>
+            
+            {% with pizza.tags.all as pizza_tags %}
+            {% if pizza_tags %}
+            <div class="pizza-tags">
+                <h3>Теги:</h3>
+                <ul class="tags-list">
+                    {% for tag in pizza_tags %}
+                    <li>
+                        <a href="{% url 'tag' tag.slug %}" class="tag">
+                            {{ tag.tag }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% endwith %}
+            
+            <div class="action-buttons">
+                {% if perms.women.change_women %}
+                <a href="{% url 'edit' pizza.slug %}" class="edit-btn">Редактировать</a>
+                {% endif %}
+                <a href="{% url 'homepage' %}" class="back-btn">Назад к списку</a>
+            </div>
+        </div>
     </div>
-   {% if perms.women.change_women %}
-<div style="margin-bottom: 20px;">
-    <a href="{% url 'edit' pizza.slug %}" class="edit-btn" 
-       style="display: inline-block; padding: 8px 15px; 
-              background-color: #3498db; color: white; 
-              text-decoration: none; border-radius: 4px;
-              font-size: 14px;">
-        Редактировать
-    </a>
-</div>
-
-{% endif %}
-    <a href="{% url 'homepage' %}" class="btn btn-primary">Назад к списку</a>
     
-</div>
-<div class="rating-section">
-    <button class="like-btn {% if user in pizza.likes.all %}active{% endif %}" 
-            id="likeBtn" 
-            data-url="{% url 'like_pizza' pizza.slug %}">
-        👍 <span id="likeCount">{{ pizza.likes.count }}</span>
-    </button>
-    <button class="dislike-btn {% if user in pizza.dislikes.all %}active{% endif %}" 
-            id="dislikeBtn" 
-            data-url="{% url 'dislike_pizza' pizza.slug %}">
-        👎 <span id="dislikeCount">{{ pizza.dislikes.count }}</span>
-    </button>
-</div>
- 
-     <!-- Секция комментариев -->
+    <div class="rating-section">
+        <button class="like-btn {% if user in pizza.likes.all %}active{% endif %}" 
+                id="likeBtn" 
+                data-url="{% url 'like_pizza' pizza.slug %}">
+            👍 <span id="likeCount">{{ pizza.likes.count }}</span>
+        </button>
+        <button class="dislike-btn {% if user in pizza.dislikes.all %}active{% endif %}" 
+                id="dislikeBtn" 
+                data-url="{% url 'dislike_pizza' pizza.slug %}">
+            👎 <span id="dislikeCount">{{ pizza.dislikes.count }}</span>
+        </button>
+    </div>
+     
+    <!-- Секция комментариев -->
     <div class="comments-section">
         <h3>Комментарии</h3>
         
@@ -82,109 +85,201 @@
         {% endif %}
         
        <div class="comments-list" id="commentsList">
-    {% for comment in pizza.comments.all %}
-    <div class="comment" id="comment-{{ comment.id }}">
-        <div class="comment-header">
-            <div>
-                <span class="comment-author">{{ comment.author.username }}</span>
-                <span class="comment-date">{{ comment.created_at|date:"d.m.Y H:i" }}</span>
+            {% for comment in pizza.comments.all %}
+            <div class="comment" id="comment-{{ comment.id }}">
+                <div class="comment-header">
+                    <div>
+                        <span class="comment-author">{{ comment.author.username }}</span>
+                        <span class="comment-date">{{ comment.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    {% if user == comment.author or user.is_superuser %}
+                    <button class="delete-comment-btn" data-comment-id="{{ comment.id }}" 
+                            title="Удалить комментарий">
+                        ×
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="comment-text">{{ comment.text }}</div>
             </div>
-            {% if user == comment.author or user.is_superuser %}
-            <button class="delete-comment-btn" data-comment-id="{{ comment.id }}" 
-                    title="Удалить комментарий">
-                    
-                ×
-            </button>
-            {% endif %}
+            {% empty %}
+            <p class="no-comments">Пока нет комментариев</p>
+            {% endfor %}
         </div>
-        <div class="comment-text">{{ comment.text }}</div>
     </div>
-    {% empty %}
-    <p class="no-comments">Пока нет комментариев</p>
-    {% endfor %}
 </div>
-    </div>
+
 <style>
+    /* Основные стили */
     .pizza-detail-container {
         max-width: 1000px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 30px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
     }
-
+    
     .pizza-main {
         display: flex;
-        gap: 30px;
+        gap: 40px;
         align-items: flex-start;
+        margin-bottom: 30px;
     }
-
+    
+    .pizza-image-container {
+        width: 350px;
+        height: 350px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        flex-shrink: 0;
+    }
+    
     .pizza-image {
-        width: 10px; /* Уменьшенный размер картинки */
-        height: auto;
-        border-radius: 8px;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
     }
-
+    
+    .pizza-image:hover {
+        transform: scale(1.03);
+    }
+    
     .pizza-info {
         flex: 1;
     }
-
+    
     .pizza-info h1 {
         color: #e67e22;
         margin-top: 0;
-        font-size: 28px;
+        margin-bottom: 15px;
+        font-size: 32px;
     }
-
+    
+    .pizza-meta {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .price {
+        font-size: 28px;
+        font-weight: bold;
+        color: #d35400;
+        margin: 0;
+    }
+    
+    .diameter, .availability {
+        font-size: 16px;
+        color: #555;
+        margin: 0;
+    }
+    
+    .availability.out-of-stock {
+        color: #e74c3c;
+    }
+    
     .description {
         color: #555;
         line-height: 1.6;
         font-size: 16px;
+        margin-bottom: 25px;
     }
-
-    .price {
-        font-size: 24px;
-        font-weight: bold;
-        color: #d35400;
-        margin: 15px 0;
+    
+    .pizza-history {
+        margin-bottom: 25px;
     }
-
-    .order-button {
+    
+    .pizza-history h3 {
+        color: #e67e22;
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+    
+    .pizza-tags h3 {
+        color: #e67e22;
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+    
+    .tags-list {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .tag {
+        display: inline-block;
+        padding: 5px 12px;
+        background-color: #f5f5f5;
+        color: #555;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+    
+    .tag:hover {
         background-color: #e67e22;
         color: white;
-        border: none;
+    }
+    
+    /* Кнопки действий */
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .edit-btn {
+        display: inline-block;
         padding: 12px 25px;
-        border-radius: 4px;
+        background-color: #108340;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
         font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s;
+        border: none;
         cursor: pointer;
-        transition: background-color 0.3s;
     }
-
-    .order-button:hover {
-        background-color: #d35400;
+    
+    .edit-btn:hover {
+        background-color: #27ae60;
+        transform: translateY(-2px);
     }
-
-    @media (max-width: 768px) {
-        .pizza-main {
-            flex-direction: column;
-        }
-        
-        .pizza-image {
-            width: 20%;
-            max-width: 350px;
-            margin: 0 auto;
-        }
+    
+    .back-btn {
+        display: inline-block;
+        padding: 12px 25px;
+        background-color: #e74c3c;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s;
     }
-</style>
-
-<style>
+    
+    .back-btn:hover {
+        background-color: #c0392b;
+        transform: translateY(-2px);
+    }
+    
+    /* Рейтинг */
     .rating-section {
-        margin: 20px 0;
+        margin: 30px 0;
         display: flex;
         gap: 15px;
     }
     
     .like-btn, .dislike-btn {
-        padding: 8px 15px;
+        padding: 10px 20px;
         border: 2px solid #ddd;
         border-radius: 20px;
         background: none;
@@ -192,21 +287,282 @@
         transition: all 0.3s;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 8px;
+        font-size: 16px;
+    }
+    
+    .like-btn:hover, .dislike-btn:hover {
+        transform: translateY(-2px);
     }
     
     .like-btn.active {
-        border-color: #4CAF50;
-        background-color: #e8f5e9;
+        border-color: #19924c;
+        background-color: rgba(46, 204, 113, 0.1);
     }
     
     .dislike-btn.active {
-        border-color: #f44336;
-        background-color: #ffebee;
+        border-color: #e74c3c;
+        background-color: rgba(231, 76, 60, 0.1);
+    }
+    
+    /* Комментарии */
+    .comments-section {
+        margin-top: 40px;
+        padding: 30px;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+    
+    .comments-section h3 {
+        color: #e67e22;
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+    
+    .comment-form {
+        margin-bottom: 25px;
+    }
+    
+    #commentText {
+        width: 100%;
+        height: 120px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-family: inherit;
+        font-size: 16px;
+        resize: vertical;
+        transition: border-color 0.3s;
+    }
+    
+    #commentText:focus {
+        outline: none;
+        border-color: #e67e22;
+    }
+    
+    .btn-comment {
+        background: #e67e22;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .btn-comment:hover {
+        background: #d35400;
+        transform: translateY(-2px);
+    }
+    
+    .comments-list {
+        margin-top: 25px;
+    }
+    
+    .comment {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: transform 0.3s;
+    }
+    
+    .comment:hover {
+        transform: translateY(-3px);
+    }
+    
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
+    
+    .comment-author {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    
+    .comment-date {
+        color: #7f8c8d;
+        margin-left: 10px;
+    }
+    
+    .comment-text {
+        line-height: 1.5;
+        color: #333;
+    }
+    
+    .delete-comment-btn {
+        background: none;
+        border: none;
+        color: #e74c3c;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 5px;
+        transition: all 0.3s;
+        line-height: 1;
+    }
+    
+    .delete-comment-btn:hover {
+        color: #c0392b;
+        transform: scale(1.2);
+    }
+    
+    .error-message {
+        color: #e74c3c;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+    
+    .auth-notice {
+        background: #fff3cd;
+        padding: 15px;
+        border-radius: 8px;
+        color: #856404;
+        line-height: 1.5;
+    }
+    
+    .auth-notice a {
+        color: #e67e22;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    
+    .auth-notice a:hover {
+        text-decoration: underline;
+    }
+    
+    .no-comments {
+        color: #7f8c8d;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .pizza-main {
+            flex-direction: column;
+        }
+        
+        .pizza-image-container {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .edit-btn, .back-btn {
+            width: 100%;
+            text-align: center;
+        }
     }
 </style>
 
 <script>
+    // Скрипты остаются без изменений
+    document.getElementById('commentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const errorDiv = document.getElementById('commentError');
+        const commentsList = document.getElementById('commentsList');
+        
+        fetch("{% url 'add_comment' pizza.slug %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                form.reset();
+                errorDiv.textContent = '';
+                
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment';
+                commentDiv.id = `comment-${data.comment_id}`;
+                commentDiv.innerHTML = `
+                    <div class="comment-header">
+                        <div>
+                            <span class="comment-author">${data.username}</span>
+                            <span class="comment-date">${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU').slice(0,5)}</span>
+                        </div>
+                        <button class="delete-comment-btn" data-comment-id="${data.comment_id}" 
+                                title="Удалить комментарий">
+                            ×
+                        </button>
+                    </div>
+                    <div class="comment-text">${data.text}</div>
+                `;
+                
+                const noComments = commentsList.querySelector('.no-comments');
+                if (noComments) noComments.remove();
+                
+                commentsList.prepend(commentDiv);
+                
+                // Добавляем обработчик для новой кнопки удаления
+                commentDiv.querySelector('.delete-comment-btn').addEventListener('click', deleteCommentHandler);
+            } else {
+                errorDiv.textContent = data.error || 'Ошибка при отправке комментария';
+            }
+        })
+        .catch(error => {
+            errorDiv.textContent = 'Произошла ошибка соединения';
+        });
+    });
+    
+    function deleteCommentHandler() {
+        const commentId = this.dataset.commentId;
+        const commentElement = document.getElementById(`comment-${commentId}`);
+        
+        if (confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+            fetch(`/comments/${commentId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    commentElement.remove();
+                    
+                    // Если больше нет комментариев, показываем сообщение
+                    if (!document.querySelectorAll('.comment').length) {
+                        const noComments = document.createElement('p');
+                        noComments.className = 'no-comments';
+                        noComments.textContent = 'Пока нет комментариев';
+                        document.getElementById('commentsList').appendChild(noComments);
+                    }
+                } else {
+                    alert('Ошибка при удалении комментария');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка соединения');
+            });
+        }
+    }
+    
+    // Добавляем обработчики для существующих кнопок удаления
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        btn.addEventListener('click', deleteCommentHandler);
+    });
+    
     function updateRating(button, countId, active) {
         const countElement = document.getElementById(countId);
         let count = parseInt(countElement.textContent);
@@ -251,205 +607,5 @@
             'dislikeCount'
         );
     });
-</script>
-
-<style>
-
-.like-container {
-  display: flex;
-  align-items: center;
-}
- 
-.like-button {
-  font-size: 24px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  padding: 0;
-  margin-right: 8px;
-}
- 
-.like-count {
-  font-size: 18px;
-}
-.delete-comment-btn {
-        background: none;
-        border: none;
-        color: #e74c3c;
-        font-size: 1.2em;
-        cursor: pointer;
-        padding: 0 5px;
-        transition: color 0.3s;
-    }
-
-    .delete-comment-btn:hover {
-        color: #c0392b;
-    }
-
-    .comment-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    /* Стили для комментариев */
-    .comments-section {
-        margin-top: 40px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-    }
-
-    .comment-form {
-        margin-bottom: 20px;
-    }
-
-    #commentText {
-        width: 100%;
-        height: 100px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-bottom: 10px;
-    }
-
-    .btn-comment {
-        background: #e67e22;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-    .btn-comment:hover {
-        background: #d35400;
-    }
-
-    .comments-list {
-        margin-top: 20px;
-    }
-
-    .comment {
-        background: white;
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .comment-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 0.9em;
-    }
-
-    .comment-author {
-        font-weight: bold;
-        color: #2c3e50;
-    }
-
-    .comment-date {
-        color: #7f8c8d;
-    }
-
-    .error-message {
-        color: #e74c3c;
-        margin-top: 5px;
-    }
-
-    .auth-notice {
-        background: #fff3cd;
-        padding: 10px;
-        border-radius: 4px;
-        color: #856404;
-    }
-</style>
-
-<script>
-    
-document.getElementById('commentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const form = e.target;
-    const formData = new FormData(form);
-    const errorDiv = document.getElementById('commentError');
-    const commentsList = document.getElementById('commentsList');
-    
-    fetch("{% url 'add_comment' pizza.slug %}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            form.reset();
-            errorDiv.textContent = '';
-            
-            const commentDiv = document.createElement('div');
-            commentDiv.className = 'comment';
-            commentDiv.innerHTML = `
-                <div class="comment-header">
-                    <span class="comment-author">${data.username}</span>
-                    <span class="comment-date">${new Date().toLocaleDateString('ru-RU')} ${new Date().toLocaleTimeString('ru-RU').slice(0,5)}</span>
-                </div>
-                <div class="comment-text">${data.text}</div>
-            `;
-            
-            const noComments = commentsList.querySelector('.no-comments');
-            if (noComments) noComments.remove();
-            
-            commentsList.prepend(commentDiv);
-        } else {
-            errorDiv.textContent = data.error || 'Ошибка при отправке комментария';
-        }
-    })
-    .catch(error => {
-        errorDiv.textContent = 'Произошла ошибка соединения';
-    });
-});
-</script>
-<script>
-// Обработчик удаления комментария
-document.querySelectorAll('.delete-comment-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const commentId = this.dataset.commentId;
-        const commentElement = document.getElementById(`comment-${commentId}`);
-        
-        if (confirm('Вы уверены, что хотите удалить этот комментарий?')) {
-            fetch(`/comments/${commentId}/delete/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    commentElement.remove();
-                    
-                    // Если больше нет комментариев, показываем сообщение
-                    if (!document.querySelectorAll('.comment').length) {
-                        const noComments = document.createElement('p');
-                        noComments.className = 'no-comments';
-                        noComments.textContent = 'Пока нет комментариев';
-                        document.getElementById('commentsList').appendChild(noComments);
-                    }
-                } else {
-                    alert('Ошибка при удалении комментария');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Произошла ошибка соединения');
-            });
-        }
-    });
-});
 </script>
 {% endblock %}

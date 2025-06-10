@@ -386,12 +386,14 @@ def about(request):
 @login_required
 def recipe(request):
     if request.method == 'POST':
-        form = RecipeForm(request.POST, request.FILES)  # request.FILES для изображений
+        form = RecipeForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            form.save()  # Сохраняем в базу
-            return redirect('recipe_list')  # Перенаправляем после успеха
+            recipe = form.save(commit=False)
+            recipe.author = request.user
+            recipe.save()
+            return redirect('recipe_list')
     else:
-        form = RecipeForm()
+        form = RecipeForm(user=request.user)
     return render(request, 'recipes/recipe.html', {'form': form})
 
 def recipe_detail(request, pk):
@@ -403,7 +405,7 @@ def recipe_list(request):
     recipes_queryset = Recipe.objects.all().order_by('-created_at')
     
     # Создаем пагинатор
-    paginator = Paginator(recipes_queryset, 3)  # 10 рецептов на странице
+    paginator = Paginator(recipes_queryset, 3) 
     
     # Получаем номер страницы из GET-параметра
     page_number = request.GET.get('page')
@@ -415,7 +417,7 @@ def recipe_list(request):
 @login_required
 def recipe_delete(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
-    if request.user.username == recipe.author_name or request.user.is_superuser:
+    if request.user == recipe.author or request.user.is_superuser:
         recipe.delete()
         return redirect('recipe_list')
     else:
@@ -428,7 +430,7 @@ def recipe_edit(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
     
     # Проверка прав
-    if request.user.username != recipe.author_name and not request.user.is_superuser:
+    if request.user != recipe.author and not request.user.is_superuser:
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
     
@@ -506,3 +508,26 @@ def delete_comment(request, comment_id):
     
     comment.delete()
     return JsonResponse({'success': True})    
+
+
+
+def pizza_list(request):
+    category_id = request.GET.get('category')  # Получаем ID категории из параметра URL
+    categories = Category.objects.all()
+    
+    # Фильтруем пиццы по категории или показываем все
+    if category_id:
+        pizzas = Pizza.objects.filter(category_id=category_id, is_available=True)
+        cat_selected = int(category_id)
+    else:
+        pizzas = Pizza.objects.filter(is_available=True)
+        cat_selected = None
+    
+    context = {
+        'pizzas': pizzas,
+        'categories': categories,
+        'cat_selected': cat_selected,
+    }
+    return render(request, 'pizza_detail/pizza_list.html', context)
+
+

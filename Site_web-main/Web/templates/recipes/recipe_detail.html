@@ -6,22 +6,30 @@
         <h1>{{ recipe.title }}</h1>
         
         <div class="recipe-meta">
-            {% if recipe.author_name %}
+            {% if recipe.author %}
+            <span class="author">Автор: {{ recipe.author.username }}</span>
+            {% elif recipe.author_name %}
             <span class="author">Автор: {{ recipe.author_name }}</span>
             {% endif %}
             <span class="date">Добавлено: {{ recipe.created_at|date:"d.m.Y H:i" }}</span>
         </div>
         
-        <!-- Добавленные кнопки управления -->
-        {% if request.user == recipe.author or request.user.is_superuser %}
-        <div class="recipe-actions">
-            <a href="{% url 'recipe_edit' recipe.id %}" class="edit-button">
-                <i class="fas fa-edit"></i> Редактировать
-            </a>
-            <a href="{% url 'recipe_delete' recipe.id %}" class="delete-button" onclick="return confirm('Вы уверены, что хотите удалить этот рецепт?')">
-                <i class="fas fa-trash-alt"></i> Удалить
-            </a>
-        </div>
+        <!-- Кнопки управления -->
+        {% if request.user.is_authenticated %}
+            {% if request.user == recipe.author or request.user.is_superuser %}
+            <div class="recipe-actions">
+                <a href="{% url 'recipe_edit' recipe.id %}" class="edit-button">
+                    <i class="fas fa-edit"></i> Редактировать
+                </a>
+                <form action="{% url 'recipe_delete' recipe.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="delete-button" 
+                            onclick="return confirm('Удалить этот рецепт?')">
+                        <i class="fas fa-trash-alt"></i> Удалить
+                    </button>
+                </form>
+            </div>
+            {% endif %}
         {% endif %}
     </div>
 
@@ -94,22 +102,23 @@
         text-decoration: none;
         font-weight: 500;
         transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
     }
 
     .edit-button {
-        background: #3498db;
+        background: #28ba1e;
         color: white;
-        border: 1px solid #2980b9;
     }
 
     .edit-button:hover {
-        background: #2980b9;
+        background: #65b929;
     }
 
     .delete-button {
         background: #e74c3c;
         color: white;
-        border: 1px solid #c0392b;
     }
 
     .delete-button:hover {
@@ -147,18 +156,10 @@
         line-height: 1.6;
     }
 
-    .ingredients-content {
-        white-space: pre-line;
-    }
-
-    .instructions-content {
-        white-space: pre-line;
-    }
-
     .back-button {
         display: inline-block;
         padding: 10px 20px;
-        background: #3498db;
+        background: #f78e1e;
         color: white;
         text-decoration: none;
         border-radius: 5px;
@@ -166,7 +167,7 @@
     }
 
     .back-button:hover {
-        background: #2980b9;
+        background: #29b92b;
     }
 
     @media (max-width: 768px) {
@@ -183,7 +184,5 @@
         }
     }
 </style>
-
-
 
 {% endblock %}

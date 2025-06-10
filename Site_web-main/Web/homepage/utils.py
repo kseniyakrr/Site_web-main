@@ -4,7 +4,7 @@ homepage = [{'title': "Загрузить файл", 'url_name': 'about'},
  {'title': "Войти", 'url_name': 'login'}
 ]
 class DataMixin:
-    paginate_by = 2
+    paginate_by = 10
     title_page = None
     extra_context = {}
     

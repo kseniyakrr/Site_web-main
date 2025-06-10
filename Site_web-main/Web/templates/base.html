@@ -211,15 +211,7 @@
         {% if request.user.username == 'admin' or request.user.is_superuser %}
 <a href="{% url 'add_page' %}" class="btn btn-addpizza">Добавить пиццу</a>
 {% endif %}
-           
-            
-            <!-- Выпадающее меню тегов -->
-            <div class="dropdown">
-                <a href="#" class="btn btn-tags">Теги <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    {% show_tags %}
-                </ul>
-            </div>
+          
             
             <!-- Блок авторизации -->
 <div class="user-auth-section" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">

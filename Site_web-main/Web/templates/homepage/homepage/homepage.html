@@ -15,33 +15,32 @@
       <div style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); max-width: 300px; background-color: rgba(255, 255, 255, 0.9); padding: 12px; border-radius: 6px; box-shadow: 0 1px 5px rgba(0,0,0,0.1);">
         <h2 style="color: #d35400; margin: 0; font-size: 18px;">НОВИНКА: Пицца Маргарита!</h2>
         <p style="color: #333; font-size: 13px; margin: 8px 0; line-height: 1.3;">Сочная пицца с томатным соусом, тающей моцареллой и ароматным базиликом</p>
-        <a href="#" style="display: inline-block; background-color: #e67e22; color: white; padding: 6px 12px; text-decoration: none; border-radius: 3px; font-weight: bold; font-size: 12px;">Попробуйте</a>
+        <a href="pizza/margarita" style="display: inline-block; background-color: #e67e22; color: white; padding: 6px 12px; text-decoration: none; border-radius: 3px; font-weight: bold; font-size: 12px;">Попробуйте</a>
       </div>
     </div>
 
-  <!-- Категории -->
 <!-- Категории -->
 <h2 class="section-title">Категории</h2>
 <div class="categories-list">
-    <span class="category-item {% if cat_selected is None %}active{% endif %}">
+    <span class="category-item {% if cat_selected is None %}active{% endif %}" data-category="all">
         ВСЕ
     </span>
     {% for category in categories %}
-    <span class="category-item {% if cat_selected == category.id %}active{% endif %}">
+    <span class="category-item {% if cat_selected == category.id %}active{% endif %}" 
+          data-category="{{ category.id }}">
         {{ category.name|upper }}
     </span>
     {% empty %}
     <p>Нет доступных категорий</p>
     {% endfor %} 
-    
 </div>
 
-
+<!-- Пиццы -->
 <h2 class="section-title">Наши пиццы</h2>
 <div class="pizzas-grid">
-    {% for pizza in pizzas %}
-    <div class="pizza-card" data-category-slug="{{ pizza.category.slug }}">
-        {% if pizza.image %}  <!-- Исправлено с p.photo на pizza.image -->
+    {% for pizza in page_obj %}
+    <div class="pizza-card" data-category="{{ pizza.category.id }}">
+        {% if pizza.image %}
         <img src="{{ pizza.image.url }}" alt="{{ pizza.name }}" class="pizza-image">
         {% else %}
         <div class="pizza-image-placeholder">Нет изображения</div>
@@ -61,14 +60,13 @@
                     <span class="pizza-diameter">({{ pizza.diameter }} см)</span>
                 </p>
             </div>
-    
             
             <div class="pizza-link-container">
-                <a href="{% if pizza.slug %}{% url 'pizza_detail' pizza.slug %}{% else %}#{% endif %}" class="pizza-link">
+                <a href="{% url 'pizza_detail' pizza.slug %}" class="pizza-link">
                     Подробнее
                 </a>
                 {% if pizza.is_available %}
-                <button class="order-btn" data-slug="{{ pizza.slug }}">Заказать</button>
+                <button class="order-btn" data-slug="{{ pizza.slug }}">В коризну</button>
                 {% else %}
                 <span class="out-of-stock">Нет в наличии</span>
                 {% endif %}
@@ -77,46 +75,68 @@
     </div>
     {% empty %}
     <p class="empty-message">Пицц пока нет</p>
-    
     {% endfor %}
-   
-       
+    
 </div>
-{% block pagination %}
-{% if page_obj.has_other_pages %}
-<nav class="list-pages">
-    <ul>
-        {% if page_obj.has_previous %}
-        <li class="page-num">
-            <a href="?page=1">&laquo;&laquo;</a>
-        </li>
-        <li class="page-num">
-            <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
-        </li>
-        {% endif %}
 
-        {% for p in paginator.page_range %}
-            {% if page_obj.number == p %}
-                <li class="page-num page-num-selected">{{ p }}</li>
-            {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
-                <li class="page-num">
-                    <a href="?page={{ p }}">{{ p }}</a>
-                </li>
-            {% endif %}
-        {% endfor %}
 
-        {% if page_obj.has_next %}
-        <li class="page-num">
-            <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
-        </li>
-        <li class="page-num">
-            <a href="?page={{ paginator.num_pages }}">&raquo;&raquo;</a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
-{% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Получаем все элементы категорий и карточек пицц
+    const categoryItems = document.querySelectorAll('.category-item');
+    const pizzaCards = document.querySelectorAll('.pizza-card');
+    
+    // Добавляем обработчик клика для каждой категории
+    categoryItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Удаляем активный класс у всех категорий
+            categoryItems.forEach(cat => cat.classList.remove('active'));
+            
+            // Добавляем активный класс текущей категории
+            this.classList.add('active');
+            
+            // Получаем ID выбранной категории
+            const selectedCategory = this.dataset.category;
+            
+            // Фильтруем пиццы
+            filterPizzas(selectedCategory);
+        });
+    });
+    
+    // Функция фильтрации пицц
+    function filterPizzas(categoryId) {
+        pizzaCards.forEach(card => {
+            if (categoryId === 'all' || card.dataset.category === categoryId) {
+                card.style.display = 'block'; // Показываем подходящие пиццы
+            } else {
+                card.style.display = 'none'; // Скрываем неподходящие
+            }
+        });
+    }
+});
+</script>
+
+<style>
+    /* Добавим стиль для курсора при наведении на категории */
+    .category-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .category-item:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .category-item.active {
+        background-color: #ff5722;
+        color: white;
+    }
+    
+    /* Анимация для плавного появления/скрытия карточек */
+    .pizza-card {
+        transition: all 0.3s ease;
+    }
+</style>
 
 
 <style>
