@@ -81,8 +81,12 @@
             <div id="commentError" class="error-message"></div>
         </div>
         {% else %}
-        <p class="auth-notice">Чтобы оставить комментарий, <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'register' %}">зарегистрируйтесь</a>.</p>
-        {% endif %}
+<p class="auth-notice">
+    Чтобы оставить комментарий, 
+    <a href="{% url 'users:login' %}?next={{ request.path }}">войдите</a> 
+    или 
+    <a href="{% url 'users:register' %}?next={{ request.path }}">зарегистрируйтесь</a>.
+</p>        {% endif %}
         
        <div class="comments-list" id="commentsList">
             {% for comment in pizza.comments.all %}
