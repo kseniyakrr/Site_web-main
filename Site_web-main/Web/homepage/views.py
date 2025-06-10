@@ -401,13 +401,11 @@ def recipe_detail(request, pk):
     return render(request, 'recipes/recipe_detail.html', {'recipe': recipe})
 
 def recipe_list(request):
-    # Получаем QuerySet (не функцию!)
+   
     recipes_queryset = Recipe.objects.all().order_by('-created_at')
-    
-    # Создаем пагинатор
+
     paginator = Paginator(recipes_queryset, 3) 
-    
-    # Получаем номер страницы из GET-параметра
+
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
@@ -428,8 +426,7 @@ def recipe_delete(request, pk):
 @login_required
 def recipe_edit(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
-    
-    # Проверка прав
+
     if request.user != recipe.author and not request.user.is_superuser:
         from django.core.exceptions import PermissionDenied
         raise PermissionDenied
@@ -444,7 +441,7 @@ def recipe_edit(request, pk):
     
     return render(request, 'recipes/recipe_form.html', {
         'form': form,
-        'object': recipe  # Передаём объект для ссылки "Отмена"
+        'object': recipe  
     })
 
 @login_required

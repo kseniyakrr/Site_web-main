@@ -203,10 +203,9 @@
         </a>
         
         <nav class="header-nav">
-            <!-- Основные ссылки -->
             <a href="{% url 'recipe_list' %}" class="btn btn-recipe">Ваши рецепты!</a>
             
-            <!-- Кнопка "Добавить пиццу" только для авторизованных -->
+    
             
         {% if request.user.username == 'admin' or request.user.is_superuser %}
 <a href="{% url 'add_page' %}" class="btn btn-addpizza">Добавить пиццу</a>
