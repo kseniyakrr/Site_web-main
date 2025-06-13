@@ -205,6 +205,8 @@
         <nav class="header-nav">
             <a href="{% url 'recipe_list' %}" class="btn btn-recipe">Ваши рецепты!</a>
             
+            <a href="{% url 'cart' %}" class="btn btn-cart">Корзина</a>
+            
     
             
         {% if request.user.username == 'admin' or request.user.is_superuser %}

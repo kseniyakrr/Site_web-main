@@ -528,3 +528,54 @@ def pizza_list(request):
     return render(request, 'pizza_detail/pizza_list.html', context)
 
 
+def cart_view(request):
+    cart = request.session.get('cart', {})
+    pizzas = []
+    total = 0
+    
+    for pizza_id, quantity in cart.items():
+        pizza = Pizza.objects.get(id=pizza_id)
+        pizzas.append({
+            'pizza': pizza,
+            'quantity': quantity,
+            'total': pizza.price * quantity
+        })
+        total += pizza.price * quantity
+    
+    return render(request, 'cart.html', {
+        'pizzas': pizzas,
+        'total': total
+    })
+
+def add_pizza_to_cart(request, pizza_id):
+    if 'cart' not in request.session:
+        request.session['cart'] = {}
+    
+    cart = request.session['cart']
+    cart[str(pizza_id)] = cart.get(str(pizza_id), 0) + 1
+    request.session.modified = True
+    
+    return redirect('cart')
+
+def remove_pizza_from_cart(request, pizza_id):
+    if 'cart' in request.session:
+        cart = request.session['cart']
+        if str(pizza_id) in cart:
+            if cart[str(pizza_id)] > 1:
+                cart[str(pizza_id)] -= 1
+            else:
+                del cart[str(pizza_id)]
+            request.session.modified = True
+    
+    return redirect('cart')
+
+def checkout_view(request):
+    cart = request.session.get('cart', {})
+    if not cart:
+        return redirect('cart')
+    
+    # Здесь будет логика оформления заказа
+    return render(request, 'checkout.html', {
+        'cart': request.session.get('cart', {}),
+        'total': sum(pizza.price * quantity for pizza, quantity in cart.items())
+    })

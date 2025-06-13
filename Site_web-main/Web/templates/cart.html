@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="pizza-cart">
+    <h2>Ваш заказ пицц</h2>
+    
+    {% if not pizzas %}
+        <p>Корзина пуста</p>
+    {% else %}
+        <ul class="pizza-list">
+            {% for item in pizzas %}
+            <li class="pizza-item">
+                <div class="pizza-info">
+                    <h3>{{ item.pizza.name }}</h3>
+                    
+                </div>
+                <div class="pizza-controls">
+                    <span>{{ item.quantity }} × {{ item.pizza.price }} ₽ = {{ item.total }} ₽</span>
+                    <a href="{% url 'remove_pizza' item.pizza.id %}" class="btn btn-sm btn-danger">-</a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        
+        <div class="cart-total">
+            <strong>Итого: {{ total }} ₽</strong>
+        </div>
+        
+        <div class="cart-actions">
+            <a href="/" class="btn btn-secondary">Добавить ещё</a>
+            <a href="{% url 'cart' %}" class="btn btn-primary" onclick="alert('Функция оформления заказа в разработке')">
+    Оформить заказ
+</a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

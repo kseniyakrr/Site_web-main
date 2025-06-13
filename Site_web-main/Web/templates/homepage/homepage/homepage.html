@@ -65,11 +65,7 @@
                 <a href="{% url 'pizza_detail' pizza.slug %}" class="pizza-link">
                     Подробнее
                 </a>
-                {% if pizza.is_available %}
-                <button class="order-btn" data-slug="{{ pizza.slug }}">В коризну</button>
-                {% else %}
-                <span class="out-of-stock">Нет в наличии</span>
-                {% endif %}
+                
             </div>
         </div>
     </div>

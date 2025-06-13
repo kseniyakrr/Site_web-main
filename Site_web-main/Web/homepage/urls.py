@@ -27,5 +27,8 @@ urlpatterns = [
     path('pizza/<slug:slug>/dislike/', views.dislike_pizza, name='dislike_pizza'),
     path('add_comment/<slug:slug>/', views.add_comment, name='add_comment'),
     path('comments/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
- 
+    path('cart/', views.cart_view, name='cart'),
+    path('cart/add/<int:pizza_id>/', views.add_pizza_to_cart, name='add_pizza'),
+    path('cart/remove/<int:pizza_id>/', views.remove_pizza_from_cart, name='remove_pizza'),
+    path('cart/checkout/', views.checkout_view, name='checkout'),
 ]

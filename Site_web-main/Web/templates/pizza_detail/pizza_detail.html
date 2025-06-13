@@ -21,6 +21,15 @@
                 </p>
             </div>
             
+              <!-- Добавленная кнопка "В корзину" -->
+            {% if pizza.is_available %}
+            <div class="add-to-cart">
+                <a href="{% url 'add_pizza' pizza.id %}" class="add-to-cart-btn">
+                    Добавить в корзину
+                </a>
+                <span class="cart-notice">Доставка от 30 минут</span>
+            </div>
+            {% endif %}
             <p class="description">{{ pizza.description }}</p>
             
             <div class="pizza-history">
@@ -113,6 +122,38 @@
 </div>
 
 <style>
+    /* Стили для кнопки добавления в корзину */
+.add-to-cart {
+    margin: 20px 0;
+}
+
+.add-to-cart-btn {
+    display: inline-block;
+    background-color: #ff5722;
+    color: white;
+    padding: 12px 25px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.add-to-cart-btn:hover {
+    background-color: #e64a19;
+}
+
+.cart-notice {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Стиль для недоступных пицц */
+.out-of-stock {
+    color: #f44336;
+    font-weight: bold;
+}
     /* Основные стили */
     .pizza-detail-container {
         max-width: 1000px;
